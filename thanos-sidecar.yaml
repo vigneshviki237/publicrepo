@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thanos-sidecar
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thanos-sidecar
+  template:
+    metadata:
+      labels:
+        app: thanos-sidecar
+    spec:
+      containers:
+        - name: thanos-sidecar
+          image: thanos/thanos:v0.23.0
+          args:
+            - sidecar
+            - --prometheus.url=http://prometheus-server:9090
+            - --objstore.config-file=/etc/thanos/bucket.yml
+            - --http-address=0.0.0.0:10902
+            - --grpc-address=0.0.0.0:10901
+            - --tsdb.path=/prometheus
+          ports:
+            - containerPort: 10902
+            - containerPort: 10901
+          volumeMounts:
+            - name: prometheus-storage
+              mountPath: /prometheus
+            - name: bucket-config
+              mountPath: /etc/thanos
+      volumes:
+        - name: prometheus-storage
+          persistentVolumeClaim:
+            claimName: prometheus-pvc
+        - name: bucket-config
+          configMap:
+            name: thanos-bucket-config
