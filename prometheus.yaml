@@ -48,7 +48,7 @@ data:
     scrape_configs:
       - job_name: 'nginx'
         static_configs:
-          - targets: ['nginx-service:80']
+          - targets: ['nginx-service.default.svc.cluster.local:80']
 
 ---
 apiVersion: v1
